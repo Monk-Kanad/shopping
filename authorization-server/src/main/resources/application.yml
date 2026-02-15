@@ -1,0 +1,10 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: authorization-server
+  cloud:
+    consul:
+      discovery:
+        register: true

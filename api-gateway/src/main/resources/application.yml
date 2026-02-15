@@ -1,0 +1,39 @@
+server:
+  port: 9000
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+    gateway:
+      discovery:
+        prefer-ip-address: true
+        ip-address: ${HOST_IP:127.0.0.1}
+        register: false
+        locator:
+          enabled: false
+      server.webflux:
+        routes:
+          - id: user-service-route
+            uri: lb://user-service
+            predicates:
+              - Path=/api/users/**
+            filters:
+              - TokenRelay= # Automatically passes the Bearer token to the User Service
+          - id: order-service-route
+            uri: lb://order-service
+            predicates:
+              - Path=/api/orders/**
+            filters:
+              - TokenRelay= # Automatically passes the Bearer token to the Order Service
+  main:
+    web-application-type: reactive
+  config:
+    import: optional:consul:localhost:8500
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG

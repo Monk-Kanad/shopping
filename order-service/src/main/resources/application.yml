@@ -1,0 +1,27 @@
+server:
+  port: 0 # Random port to allow multiple instances
+
+spring:
+  application:
+    name: order-service
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:9090
+  cloud:
+    consul:
+      discovery:
+        prefer-ip-address: true
+        instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus  # at minimum: health
+  endpoint:
+    health:
+      show-details: always               # optional but helpful
