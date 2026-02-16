@@ -1,39 +1,45 @@
 package com.monks.user_service.controller;
 
+import com.monks.user_service.model.User;
+import com.monks.user_service.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    private static final List<User> USERS = List.of(
-            new User(1L, "Alice", "alice@example.com"),
-            new User(2L, "Bob", "bob@example.com"),
-            new User(3L, "Charlie", "charlie@example.com")
-    );
+
+    private final UserRepository userRepository;
 
     @GetMapping()
     public Flux<User> getAllUsers(@AuthenticationPrincipal Jwt jwt) {
         System.out.println("Jwt Claims : " + jwt.getClaims());
-        return Flux.fromIterable(USERS);
+        return userRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    public Mono<User> getUserById(@AuthenticationPrincipal Jwt jwt, @PathVariable Long id) {
-        return Mono.justOrEmpty(USERS.stream()
-                .filter(user -> user.id().equals(id))
-                .findFirst());
+    public Mono<User> getUserById(@AuthenticationPrincipal Jwt jwt, @PathVariable String id) {
+        return userRepository.findById(id);
     }
-}
 
-record User(Long id, String name, String email) {
+    @GetMapping("/{name}")
+    public Flux<User> getUserByName(@AuthenticationPrincipal Jwt jwt, @PathVariable String name) {
+        return userRepository.findByName(name);
+    }
+
+    @PostMapping
+    public Mono<User> createUser(@RequestBody User user) {
+        return userRepository.save(user);
+    }
+
+    @DeleteMapping("/{id}")
+    public Mono<Void> deleteUserById(@AuthenticationPrincipal Jwt jwt, @PathVariable String id) {
+        return userRepository.deleteById(id);
+    }
 }
